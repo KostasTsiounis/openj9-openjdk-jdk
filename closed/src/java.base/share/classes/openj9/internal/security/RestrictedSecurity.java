@@ -77,6 +77,8 @@ public final class RestrictedSecurity {
 
     private static String userSecurityID;
 
+    private static ProfileParser profileParser;
+
     private static RestrictedSecurityProperties restricts;
 
     private static final Set<String> unmodifiableProperties = new HashSet<>();
@@ -168,6 +170,13 @@ public final class RestrictedSecurity {
 
     private RestrictedSecurity() {
         super();
+    }
+
+    public static void checkHashValues() {
+        if (profileParser != null) {
+            profileParser.checkHashValues();
+            profileParser = null;
+        }
     }
 
     /**
@@ -454,7 +463,7 @@ public final class RestrictedSecurity {
                 checkIfKnownProfileSupported();
 
                 // Initialize restricted security properties from java.security file.
-                ProfileParser profileParser = new ProfileParser(profileID, props);
+                profileParser = new ProfileParser(profileID, props);
                 restricts = profileParser.getProperties();
 
                 // Restricted security properties checks.
@@ -484,9 +493,6 @@ public final class RestrictedSecurity {
                 }
 
                 securityEnabled = true;
-
-                // Check whether the hash values match (i.e., profiles haven't been altered).
-                profileParser.checkHashValues();
             }
         } catch (Exception e) {
             if (debug != null) {
