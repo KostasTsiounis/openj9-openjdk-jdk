@@ -116,12 +116,12 @@ public final class ProviderList {
 
     public static ProviderList insertAt(ProviderList providerList, Provider p,
             int position) {
-        if (providerList.getProvider(p.getName()) != null) {
-            return providerList;
-        }
         if (!RestrictedSecurity.isProviderAllowed(p.getClass())) {
             // We're in restricted security mode which does not allow this provider,
             // return without adding.
+            return providerList;
+        }
+        if (providerList.getProvider(p.getName()) != null) {
             return providerList;
         }
         List<ProviderConfig> list = new ArrayList<>
