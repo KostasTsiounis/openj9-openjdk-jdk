@@ -291,8 +291,7 @@ public final class SunEntries {
          */
         /* Don't use native MD5 on AIX due to an observed performance regression. */
         if (useNativeDigest
-            && NativeCrypto.isAllowedAndLoaded()
-            && NativeCrypto.isMD5Available()
+            && NativeCrypto.isAlgorithmAvailable("MD5")
             && !OperatingSystem.isAix()
         ) {
             providerMD5 = "sun.security.provider.NativeMD5";
