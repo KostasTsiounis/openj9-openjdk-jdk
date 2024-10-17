@@ -438,7 +438,7 @@ public final class RestrictedSecurity {
                         + "properties to be set, use '-Dsemeru.fips.allowsetproperties=true'.");
                 debug.println("BEWARE: You might not be FIPS compliant if you select to override!");
             }
-            throw new SecurityException("FIPS mode: User-specified '" + key
+            throw new SecurityException("FIPS mode: Property '" + key
                     + "' cannot be set programmatically when in FIPS mode.");
         }
 
