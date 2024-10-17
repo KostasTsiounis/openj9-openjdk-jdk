@@ -557,8 +557,8 @@ public final class RestrictedSecurity {
         }
 
         if (userEnabledFIPS && !allowSetProperties) {
-            // Create set of properties that cannot be modified.
-            unmodifiableProperties = propsMapping.keySet();
+            // Add all properties that cannot be modified.
+            unmodifiableProperties.addAll(propsMapping.keySet());
         }
 
         for (Map.Entry<String, String> entry : propsMapping.entrySet()) {
