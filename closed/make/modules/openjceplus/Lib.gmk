@@ -72,7 +72,8 @@ compile-libs :
 			-C $(OPENJCEPLUS_JGSKIT_MAKE_PATH) \
 			-f $(OPENJCEPLUS_JGSKIT_MAKE) \
 			OPENJCEPLUS_HEADER_FILES=$(OPENJCEPLUS_HEADER_FILES) \
-			noheaders
+      EXTERNAL_HEADERS=true \
+			all
 	@$(ECHO) OpenJCEplus compile complete
 
 TARGETS += compile-libs
