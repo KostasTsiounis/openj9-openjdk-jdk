@@ -795,11 +795,13 @@ public final class RestrictedSecurity {
                 String cType = constraint.type;
                 String cAlgorithm = constraint.algorithm;
                 String cAttribute = constraint.attributes;
+                String cAcceptedUses = constraint.acceptedUses;
                 if (debug != null) {
                     debug.println("Checking provider constraint:"
                                 + "\n\tService type: " + cType
                                 + "\n\tAlgorithm: " + cAlgorithm
-                                + "\n\tAttributes: " + cAttribute);
+                                + "\n\tAttributes: " + cAttribute
+                                + "\n\tAccepted uses: " + cAcceptedUses);
                 }
 
                 if (!isAsterisk(cType) && !type.equals(cType)) {
@@ -817,56 +819,80 @@ public final class RestrictedSecurity {
                     continue;
                 }
 
-                // For type and algorithm match, and attribute is *.
-                if (isAsterisk(cAttribute)) {
-                    if (debug != null) {
-                        debug.println("The following service:"
-                                + "\n\tService type: " + type
-                                + "\n\tAlgorithm: " + algorithm
-                                + "\nis allowed in provider: " + providerClassName);
-                    }
-                    return true;
-                }
-
                 // For type and algorithm match, and attribute is not *.
                 // Then continue checking attributes.
-                String[] cAttributeArray = cAttribute.split(":");
+                if (!isAsterisk(cAttribute)) {
+                    String[] cAttributeArray = cAttribute.split(":");
 
-                // For each attribute, must be all matched for return allowed.
-                for (String attribute : cAttributeArray) {
-                    String[] input = attribute.split("=", 2);
+                    // For each attribute, must be all matched for return allowed.
+                    for (String attribute : cAttributeArray) {
+                        String[] input = attribute.split("=", 2);
 
-                    String cName = input[0].trim();
-                    String cValue = input[1].trim();
-                    String sValue = service.getAttribute(cName);
-                    if (debug != null) {
-                        debug.println("Checking specific attribute with:"
-                                + "\n\tName: " + cName
-                                + "\n\tValue: " + cValue
-                                + "\nagainst the service attribute value: " + sValue);
-                    }
-                    if ((sValue == null) || !cValue.equalsIgnoreCase(sValue)) {
-                        // If any attribute doesn't match, return service is not allowed.
+                        String cName = input[0].trim();
+                        String cValue = input[1].trim();
+                        String sValue = service.getAttribute(cName);
                         if (debug != null) {
-                            debug.println("Attributes don't match!");
+                            debug.println("Checking specific attribute with:"
+                                    + "\n\tName: " + cName
+                                    + "\n\tValue: " + cValue
+                                    + "\nagainst the service attribute value: " + sValue);
+                        }
+                        if ((sValue == null) || !cValue.equalsIgnoreCase(sValue)) {
+                            // If any attribute doesn't match, return service is not allowed.
+                            if (debug != null) {
+                                debug.println("Attributes don't match!");
+                                debug.println("The following service:"
+                                            + "\n\tService type: " + type
+                                            + "\n\tAlgorithm: " + algorithm
+                                            + "\n\tAttribute: " + cAttribute
+                                            + "\nis NOT allowed in provider: " + providerClassName);
+                            }
+                            return false;
+                        }
+                        if (debug != null) {
+                            debug.println("Attributes match!");
+                        }
+                    }
+                }
+
+                // See if a regex for accepted uses has been specified and apply
+                // it to the call stack.
+                if (!isNullOrBlank(cAcceptedUses)) {
+                    StackTraceElement[] stackElements = Thread.currentThread().getStackTrace();
+                    boolean found = false;
+                    for (StackTraceElement stackElement : stackElements) {
+                        Pattern p = Pattern.compile(cAcceptedUses);
+                        Matcher m = p.matcher(stackElement.getClassName());
+                        // If a matching class is found in call stack, stop looking.
+                        if (m.find()) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    // If nothing matching the regex is found in the call stack,
+                    // this service is not allowed.
+                    if (!found) {
+                        if (debug != null) {
+                            debug.println("Classes in call stack are not part of accepted uses!");
                             debug.println("The following service:"
                                         + "\n\tService type: " + type
                                         + "\n\tAlgorithm: " + algorithm
                                         + "\n\tAttribute: " + cAttribute
+                                        + "\n\tAccepted uses: " + cAcceptedUses
                                         + "\nis NOT allowed in provider: " + providerClassName);
                         }
                         return false;
                     }
-                    if (debug != null) {
-                        debug.println("Attributes match!");
-                    }
                 }
+
                 if (debug != null) {
                     debug.println("All attributes matched!");
                     debug.println("The following service:"
                                 + "\n\tService type: " + type
                                 + "\n\tAlgorithm: " + algorithm
                                 + "\n\tAttribute: " + cAttribute
+                                + "\n\tAccepted uses: " + cAcceptedUses
                                 + "\nis allowed in provider: " + providerClassName);
                 }
                 return true;
@@ -1453,7 +1479,7 @@ public final class RestrictedSecurity {
             final String typeRE = "\\w+";
             final String algoRE = "[A-Za-z0-9./_-]+";
             final String attrRE = "[A-Za-z0-9=*|.:]+";
-            final String consRE = "\\{(" + typeRE + "),(" + algoRE + "),(" + attrRE + ")\\}";
+            final String consRE = "\\{(" + typeRE + "),(" + algoRE + "),(" + attrRE + ")(,\\S+)*\\}";
             p = Pattern.compile(
                 "\\["
                 + "([+-]?)"             // option to append or remove
@@ -1476,6 +1502,7 @@ public final class RestrictedSecurity {
                 String inType = m.group(1);
                 String inAlgorithm = m.group(2);
                 String inAttributes = m.group(3);
+                String inAcceptedUses = m.group(4);
 
                 // Each attribute must includes 2 fields (key and value) or *.
                 if (!isAsterisk(inAttributes)) {
@@ -1488,7 +1515,12 @@ public final class RestrictedSecurity {
                         }
                     }
                 }
-                Constraint constraint = new Constraint(inType, inAlgorithm, inAttributes);
+
+                if (isNullOrBlank(inAcceptedUses)) {
+                    inAcceptedUses = null;
+                }
+
+                Constraint constraint = new Constraint(inType, inAlgorithm, inAttributes, inAcceptedUses);
                 constraints.add(constraint);
             }
 
@@ -1822,17 +1854,21 @@ public final class RestrictedSecurity {
         final String type;
         final String algorithm;
         final String attributes;
+        final String acceptedUses;
 
-        Constraint(String type, String algorithm, String attributes) {
+        Constraint(String type, String algorithm, String attributes, String acceptedUses) {
             super();
             this.type = type;
             this.algorithm = algorithm;
             this.attributes = attributes;
+            this.acceptedUses = acceptedUses;
         }
 
         @Override
         public String toString() {
-            return "{" + type + ", " + algorithm + ", " + attributes + "}";
+            String constraintInfo = type + ", " + algorithm + ", " + attributes;
+            constraintInfo = (acceptedUses != null) ? constraintInfo + acceptedUses : constraintInfo;
+            return "{" + constraintInfo + "}";
         }
 
         @Override
@@ -1844,13 +1880,14 @@ public final class RestrictedSecurity {
                 return Objects.equals(type, other.type)
                     && Objects.equals(algorithm, other.algorithm)
                     && Objects.equals(attributes, other.attributes);
+                    && Objects.equals(acceptedUses, other.acceptedUses);
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(type, algorithm, attributes);
+            return Objects.hash(type, algorithm, attributes, acceptedUses);
         }
     }
 }

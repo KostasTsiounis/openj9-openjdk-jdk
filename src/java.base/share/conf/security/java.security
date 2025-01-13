@@ -283,7 +283,7 @@ RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3.jce.provider.1 = com.ibm.crypto.plu
     {KeyGenerator, SunTlsMasterSecret, *}, \
     {KeyGenerator, SunTlsPrf, *}, \
     {KeyGenerator, SunTlsRsaPremasterSecret, *}, \
-    {KeyPairGenerator, EC, *}, \
+    {KeyPairGenerator, EC, *, \S*StackConstraints\S*}, \
     {KeyPairGenerator, RSA, *}, \
     {KeyPairGenerator, RSAPSS, *}, \
     {Mac, HmacSHA224, *}, \
