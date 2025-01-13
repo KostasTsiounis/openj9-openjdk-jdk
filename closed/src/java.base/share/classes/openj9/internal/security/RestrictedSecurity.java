@@ -1879,7 +1879,7 @@ public final class RestrictedSecurity {
             if (obj instanceof Constraint other) {
                 return Objects.equals(type, other.type)
                     && Objects.equals(algorithm, other.algorithm)
-                    && Objects.equals(attributes, other.attributes);
+                    && Objects.equals(attributes, other.attributes)
                     && Objects.equals(acceptedUses, other.acceptedUses);
             }
             return false;
