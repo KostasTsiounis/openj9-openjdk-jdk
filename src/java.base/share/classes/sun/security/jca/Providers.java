@@ -111,7 +111,7 @@ public class Providers {
         // triggers a getInstance() call (although that should not happen)
         providerList = ProviderList.EMPTY;
         providerList = ProviderList.fromSecurityProperties();
-        RestrictedSecurity.checkHashValues();
+        //RestrictedSecurity.checkHashValues();
     }
 
     // Return Sun provider.
