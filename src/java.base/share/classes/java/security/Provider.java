@@ -1239,7 +1239,7 @@ public abstract class Provider extends Properties {
             throw new IllegalArgumentException
                     ("service.getProvider() must match this Provider object");
         }
-        if (!RestrictedSecurity.isServiceAllowed(s)) {
+        if (!RestrictedSecurity.canServiceBeAdded(s)) {
             // We're in restricted security mode which does not allow this service,
             // return without registering.
             return;

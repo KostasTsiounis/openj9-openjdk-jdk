@@ -255,7 +255,20 @@ public final class RestrictedSecurity {
      */
     public static boolean isServiceAllowed(Service service) {
         if (securityEnabled) {
-            return restricts.isRestrictedServiceAllowed(service);
+            return restricts.isRestrictedServiceAllowed(service, false);
+        }
+        return true;
+    }
+
+    /**
+     * Check if the service is allowed in restricted security mode.
+     *
+     * @param service the service to check
+     * @return true if the service is allowed
+     */
+    public static boolean canServiceBeAdded(Service service) {
+        if (securityEnabled) {
+            return restricts.isRestrictedServiceAllowed(service, true);
         }
         return true;
     }
@@ -759,7 +772,7 @@ public final class RestrictedSecurity {
          * @param service the Service to check
          * @return true if the Service is allowed
          */
-        boolean isRestrictedServiceAllowed(Service service) {
+        boolean isRestrictedServiceAllowed(Service service, boolean isServiceAdded) {
             Provider provider = service.getProvider();
             String providerClassName = provider.getClass().getName();
 
@@ -795,7 +808,7 @@ public final class RestrictedSecurity {
                 String cType = constraint.type;
                 String cAlgorithm = constraint.algorithm;
                 String cAttribute = constraint.attributes;
-                String cAcceptedUses = constraint.acceptedUses;
+                String cAcceptedUses = constraint.acceptedUses.substring(1).strip();
                 if (debug != null) {
                     debug.println("Checking provider constraint:"
                                 + "\n\tService type: " + cType
@@ -857,10 +870,13 @@ public final class RestrictedSecurity {
 
                 // See if a regex for accepted uses has been specified and apply
                 // it to the call stack.
-                if (!isNullOrBlank(cAcceptedUses)) {
+                if (!isServiceAdded && !isNullOrBlank(cAcceptedUses)) {
                     StackTraceElement[] stackElements = Thread.currentThread().getStackTrace();
                     boolean found = false;
                     for (StackTraceElement stackElement : stackElements) {
+                        if (debug != null) {
+                            debug.println("Attempting to match " + stackElement + "using the regex: " + cAcceptedUses);
+                        }
                         Pattern p = Pattern.compile(cAcceptedUses);
                         Matcher m = p.matcher(stackElement.getClassName());
                         // If a matching class is found in call stack, stop looking.
