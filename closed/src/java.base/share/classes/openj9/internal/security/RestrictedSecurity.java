@@ -808,7 +808,7 @@ public final class RestrictedSecurity {
                 String cType = constraint.type;
                 String cAlgorithm = constraint.algorithm;
                 String cAttribute = constraint.attributes;
-                String cAcceptedUses = constraint.acceptedUses.substring(1).strip();
+                String cAcceptedUses = constraint.acceptedUses;
                 if (debug != null) {
                     debug.println("Checking provider constraint:"
                                 + "\n\tService type: " + cType
@@ -871,6 +871,7 @@ public final class RestrictedSecurity {
                 // See if a regex for accepted uses has been specified and apply
                 // it to the call stack.
                 if (!isServiceAdded && !isNullOrBlank(cAcceptedUses)) {
+                    cAcceptedUses = cAcceptedUses.substring(1).strip();
                     StackTraceElement[] stackElements = Thread.currentThread().getStackTrace();
                     boolean found = false;
                     for (StackTraceElement stackElement : stackElements) {
