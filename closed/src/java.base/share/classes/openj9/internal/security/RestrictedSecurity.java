@@ -44,6 +44,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -873,23 +874,16 @@ public final class RestrictedSecurity {
                 if (!isServiceAdded && !isNullOrBlank(cAcceptedUses)) {
                     cAcceptedUses = cAcceptedUses.substring(1).strip();
                     StackTraceElement[] stackElements = Thread.currentThread().getStackTrace();
-                    boolean found = false;
-                    for (StackTraceElement stackElement : stackElements) {
-                        if (debug != null) {
-                            debug.println("Attempting to match " + stackElement + "using the regex: " + cAcceptedUses);
-                        }
-                        Pattern p = Pattern.compile(cAcceptedUses);
-                        Matcher m = p.matcher(stackElement.getClassName());
-                        // If a matching class is found in call stack, stop looking.
-                        if (m.find()) {
-                            found = true;
-                            break;
-                        }
+                    String stackTrace = String.join("\n\t", stackElements);
+                    if (debug != null) {
+                        debug.println("Using the regex: " + cAcceptedUses + " on the following stack trace:\n" + stackTrace);
                     }
+                    Pattern p = Pattern.compile(cAcceptedUses);
+                    Matcher m = p.matcher(stackTrace);
 
                     // If nothing matching the regex is found in the call stack,
                     // this service is not allowed.
-                    if (!found) {
+                    if (!m.find()) {
                         if (debug != null) {
                             debug.println("Classes in call stack are not part of accepted uses!");
                             debug.println("The following service:"
