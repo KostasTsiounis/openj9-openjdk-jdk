@@ -876,7 +876,8 @@ public final class RestrictedSecurity {
                     StackTraceElement[] stackElements = Thread.currentThread().getStackTrace();
                     String stackTrace = Stream.of(stackElements)
                                               .map(se -> se.toString())
-                                              .collect(Collectors.joining("\\n\\t"));
+                                              .collect(Collectors.joining("\n\tat "));
+                    stackTrace += "Stack trace triggered from ";
                     if (debug != null) {
                         debug.println("Using the regex: " + cAcceptedUses + " on the following stack trace:\n" + stackTrace);
                     }
