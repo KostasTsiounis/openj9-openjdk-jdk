@@ -874,7 +874,9 @@ public final class RestrictedSecurity {
                 if (!isServiceAdded && !isNullOrBlank(cAcceptedUses)) {
                     cAcceptedUses = cAcceptedUses.substring(1).strip();
                     StackTraceElement[] stackElements = Thread.currentThread().getStackTrace();
-                    String stackTrace = String.join("\n\t", stackElements);
+                    String stackTrace = Stream.of(stackElements)
+                                              .map(se -> se.toString())
+                                              .collect(Collectors.joining("\\n\\t"));
                     if (debug != null) {
                         debug.println("Using the regex: " + cAcceptedUses + " on the following stack trace:\n" + stackTrace);
                     }
