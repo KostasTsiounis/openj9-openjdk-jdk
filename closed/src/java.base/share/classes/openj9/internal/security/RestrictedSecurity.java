@@ -872,7 +872,7 @@ public final class RestrictedSecurity {
                 // See if a regex for accepted uses has been specified and apply
                 // it to the call stack.
                 if (!isServiceAdded && !isNullOrBlank(cAcceptedUses)) {
-                    cAcceptedUses = cAcceptedUses.substring(1).strip().substring(1, cAcceptedUses.length());
+                    cAcceptedUses = cAcceptedUses.substring(2, cAcceptedUses.length() - 1);
                     StackTraceElement[] stackElements = Thread.currentThread().getStackTrace();
                     String stackTrace = Stream.of(stackElements)
                                               .map(se -> se.toString())
