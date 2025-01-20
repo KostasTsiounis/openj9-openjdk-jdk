@@ -1805,7 +1805,7 @@ public final class RestrictedSecurity {
                 + "(\\["                                // constraints [optional]
                     + "\\s*"
                     + "([+-])?"                         // action [optional]
-                    + "\\{.+\\}"                        // constraint definition
+                    + "\\{.+?\\}"                        // constraint definition
                 + "\\])?"
                 + "\\s*"
                 + "$");
