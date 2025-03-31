@@ -90,14 +90,23 @@ public class NativeCrypto {
             // Load jncrypto JNI library.
             System.loadLibrary("jncrypto");
 
+            // Get user-specified option to skip bundled OpenSSL library.
+            boolean skipBundledLib = System.getProperty("jdk.native.openssl.lib.skipBundled") != null;
+
             // Get user-specified OpenSSL library to use, if available.
-            String nativeLibName = System.getProperty("jdk.native.openssl.lib", "");
+            String nativeLibName = System.getProperty("jdk.native.openssl.lib");
+
+            // Check that these mutually exclusive flags are not used at the same time.
+            if (skipBundledLib && (nativeLibName != null)) {
+                throw new RuntimeException("You cannot specify 'jdk.native.openssl.lib.skipBundled'" +
+                        " and 'jdk.native.openssl.lib' at the same time");
+            }
 
             // Get the JDK location.
             String javaHome = StaticProperty.javaHome();
 
             // Load OpenSSL crypto library dynamically.
-            osslVersion = loadCrypto(traceEnabled, nativeLibName, javaHome);
+            osslVersion = loadCrypto(traceEnabled, skipBundledLib, nativeLibName, javaHome);
             if (osslVersion != -1) {
                 if (traceEnabled) {
                     System.err.println("Native crypto library load succeeded - using native crypto library.");
@@ -269,6 +278,7 @@ public class NativeCrypto {
     /* OpenSSL utility interfaces */
 
     private static final native long loadCrypto(boolean trace,
+                                                boolean skipBundledLib,
                                                 String libName,
                                                 String javaHome);
 
