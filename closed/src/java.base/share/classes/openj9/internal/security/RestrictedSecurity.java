@@ -1085,6 +1085,12 @@ public final class RestrictedSecurity {
         private final Set<String> profileCheckPropertyNames;
         private final Set<String> profileCheckProviderNames;
 
+        private enum ProviderAction {
+            NEW,
+            UPDATE,
+            APPEND
+        }
+
         /**
          *
          * @param id    the restricted security custom profile ID
@@ -1246,9 +1252,13 @@ public final class RestrictedSecurity {
             }
         }
 
-        private void parseProvider(String providerInfo, int providerPos, boolean update) {
+        private void parseProvider(String providerInfo, int providerPos, ProviderAction providerAction) {
             if (debug != null) {
-                debug.println("\t\tLoading provider in position " + providerPos);
+                debug.print("\t\tLoading provider in position ");
+                if (providerAction == ProviderAction.APPEND) {
+                    debug.print("APPEND");
+                }
+                debug.println(providerPos);
             }
 
             checkProviderFormat(providerInfo, update);
@@ -1256,8 +1266,10 @@ public final class RestrictedSecurity {
             int pos = providerInfo.indexOf('[');
             String providerName = (pos < 0) ? providerInfo.trim() : providerInfo.substring(0, pos).trim();
             // Provider with argument (provider name + optional argument).
-            if (update) {
+            if (providerAction == ProviderAction.UPDATE) {
                 providers.set(providerPos - 1, providerName);
+            } else if (providerAction == ProviderAction.APPEND) {
+                providers.add(providers.size(), providerName);
             } else {
                 providers.add(providerPos - 1, providerName);
             }
@@ -1270,16 +1282,22 @@ public final class RestrictedSecurity {
             providerName = providerName.trim();
 
             boolean providerChanged = false;
-            if (update) {
+            if (providerAction == ProviderAction.UPDATE) {
                 String previousProviderName = providersFullyQualifiedClassName.get(providerPos - 1);
                 providerChanged = !previousProviderName.equals(providerName);
                 providersFullyQualifiedClassName.set(providerPos - 1, providerName);
+            } else if (providerAction == ProviderAction.APPEND) {
+                providersFullyQualifiedClassName.add(providersFullyQualifiedClassName.size(), providerName);
             } else {
                 providersFullyQualifiedClassName.add(providerPos - 1, providerName);
             }
 
             if (debug != null) {
-                debug.println("\t\tLoaded provider in position " + providerPos + " named: " + providerName);
+                int addedInPosition = providerPos;
+                if (providerAction == ProviderAction.APPEND) {
+                    addedInPosition = providers.size();
+                }
+                debug.println("\t\tLoaded provider in position " + addedInPosition + " named: " + providerName);
             }
 
             // Set the provided constraints for this provider.
@@ -1356,7 +1374,7 @@ public final class RestrictedSecurity {
 
                 allInfo.add(property + "=" + providerInfo);
 
-                parseProvider(providerInfo, pNum, false);
+                parseProvider(providerInfo, pNum, ProviderAction.NEW);
                 profileCheckProviderNames.remove(property);
             }
 
@@ -1381,7 +1399,7 @@ public final class RestrictedSecurity {
                     allInfo.add(property + "=" + providerInfo);
                     if (!providerInfo.isBlank()) {
                         // Update the specific provider.
-                        parseProvider(providerInfo, i, true);
+                        parseProvider(providerInfo, i, ProviderAction.UPDATE);
                     } else {
                         // Remove provider(s) after checking.
                         removeProvider(profileExtensionId, i);
@@ -1392,7 +1410,7 @@ public final class RestrictedSecurity {
                 }
             }
 
-            // Deal with additional providers added.
+            // Deal with additional providers added explicitly.
             for (int i = numOfExistingProviders + 1;; i++) {
                 String property = profileExtensionId + ".jce.provider." + i;
                 String providerInfo = securityProps.getProperty(property);
@@ -1415,7 +1433,28 @@ public final class RestrictedSecurity {
 
                 allInfo.add(property + "=" + providerInfo);
 
-                parseProvider(providerInfo, i, false);
+                parseProvider(providerInfo, i, ProviderAction.NEW);
+                profileCheckProviderNames.remove(property);
+            }
+
+            // Deal with additional providers added using the append option.
+            for (int i = 1;; i++) {
+                String property = profileExtensionId + ".jce.provider.APPEND" + i;
+                String providerInfo = securityProps.getProperty(property);
+
+                if (providerInfo == null) {
+                    break;
+                }
+
+                if (providerInfo.isBlank()) {
+                    printStackTraceAndExit(
+                        "Cannot append an empty provider in position APPEND"
+                            + i + ".");
+                }
+
+                allInfo.add(property + "=" + providerInfo);
+
+                parseProvider(providerInfo, i, ProviderAction.APPEND);
                 profileCheckProviderNames.remove(property);
             }
         }
@@ -1917,9 +1956,15 @@ public final class RestrictedSecurity {
 
         private void checkProfileCheck(String profileID) {
             if (!profileCheckProviderNames.isEmpty()) {
+                if (debug != null) {
+                    debug.println("Provider properties not parsed:");
+                    for (String unparsedProvider: profileCheckProviderNames) {
+                        debug.println("\t" + unparsedProvider);
+                    }
+                }
                 printStackTraceAndExit(
-                        "The order numbers of providers in profile " + profileID
-                                + " (or a base profile) are not consecutive.");
+                        "Some provider properties in profile " + profileID
+                                + " (or a base profile) are not parsed.");
             }
             if (!profileCheckPropertyNames.isEmpty()) {
                 printStackTraceAndExit(

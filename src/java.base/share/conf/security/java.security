@@ -362,7 +362,8 @@ RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.1 = 
     {MessageDigest, SHA-1, *, ModuleAndFullClassName:java.rmi/sun.rmi.server.Util}]
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.2 = sun.security.provider.Sun [+ \
     {KeyStore, PKCS12, *, ModuleAndFullClassName:java.base/java.security.KeyStore}]
-RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.4 = com.sun.crypto.provider.SunJCE [ \
+
+RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.APPEND1 = com.sun.crypto.provider.SunJCE [ \
     {AlgorithmParameters, PBE, *, ModuleAndFullClassName:java.base/sun.security.pkcs12.PKCS12KeyStore}, \
     {AlgorithmParameters, PBES2, *, ModuleAndFullClassName:java.base/sun.security.pkcs12.PKCS12KeyStore}, \
     {AlgorithmParameters, PBEWithHmacSHA1AndAES_128, *, ModuleAndFullClassName:java.base/sun.security.pkcs12.PKCS12KeyStore}, \
@@ -437,8 +438,8 @@ RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.4 = 
     {SecretKeyFactory, PBEWithSHA1AndRC2_40, *, ModuleAndFullClassName:java.base/sun.security.pkcs12.PKCS12KeyStore}, \
     {SecretKeyFactory, PBEWithSHA1AndRC4_128, *, ModuleAndFullClassName:java.base/sun.security.pkcs12.PKCS12KeyStore}, \
     {SecretKeyFactory, PBEWithSHA1AndRC4_40, *, ModuleAndFullClassName:java.base/sun.security.pkcs12.PKCS12KeyStore}]
-RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.5 = sun.security.jgss.SunProvider
-RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.6 = com.sun.security.sasl.gsskerb.JdkSASL
+RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.APPEND2 = sun.security.jgss.SunProvider
+RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.APPEND3 = com.sun.security.sasl.gsskerb.JdkSASL
 
 # Weakly-Enforced Restricted Security mode profile for FIPS 140-3. This profile allows for all algorithms
 # within the OpenJCEPlusFIPS provider to be callable, even though algorithms may or may not be allowable
