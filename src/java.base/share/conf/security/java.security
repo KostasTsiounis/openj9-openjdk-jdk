@@ -354,7 +354,7 @@ RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3.securerandom.algorithm = SHA512DRBG
 # + Enablement of the JdkSASL and SunJGSS providers.
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.desc.name = OpenJCEPlusFIPS Cryptographic Module FIPS 140-3 Including Additional Java Services
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.desc.default = false
-RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.desc.hash = SHA256:5b6fa14538ed0a7b89bc187da998519fe0650d7b25b9270e419536deff39467a
+RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.desc.hash = SHA256:1ab01dc9e1a11a9f1f1901bcde530a74859fd9ac4bb28c2989ac7b528b0fe891
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.extends = RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.1 = com.ibm.crypto.plus.provider.OpenJCEPlusFIPS [+ \
     {MessageDigest, MD5, *, ModuleAndFullClassName:java.base/sun.security.pkcs12.PKCS12KeyStore}, \
