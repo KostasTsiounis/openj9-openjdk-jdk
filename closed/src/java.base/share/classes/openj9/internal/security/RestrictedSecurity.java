@@ -1254,14 +1254,14 @@ public final class RestrictedSecurity {
 
         private void parseProvider(String providerInfo, int providerPos, ProviderAction providerAction) {
             if (debug != null) {
-                debug.print("\t\tLoading provider in position ");
                 if (providerAction == ProviderAction.APPEND) {
-                    debug.print("APPEND");
+                    debug.println("\t\tLoading provider in position APPEND" + providerPos);
+                } else {
+                    debug.println("\t\tLoading provider in position " + providerPos);
                 }
-                debug.println(providerPos);
             }
 
-            checkProviderFormat(providerInfo, update);
+            checkProviderFormat(providerInfo, (providerAction == ProviderAction.UPDATE));
 
             int pos = providerInfo.indexOf('[');
             String providerName = (pos < 0) ? providerInfo.trim() : providerInfo.substring(0, pos).trim();
