@@ -363,6 +363,7 @@ RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.1 = 
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.2 = sun.security.provider.Sun [+ \
     {KeyStore, PKCS12, *, ModuleAndFullClassName:java.base/java.security.KeyStore}]
 
+# Append additional providers.
 RestrictedSecurity.OpenJCEPlusFIPS.FIPS140-3-Strongly-Enforced.jce.provider.APPEND1 = com.sun.crypto.provider.SunJCE [ \
     {AlgorithmParameters, PBE, *, ModuleAndFullClassName:java.base/sun.security.pkcs12.PKCS12KeyStore}, \
     {AlgorithmParameters, PBES2, *, ModuleAndFullClassName:java.base/sun.security.pkcs12.PKCS12KeyStore}, \
