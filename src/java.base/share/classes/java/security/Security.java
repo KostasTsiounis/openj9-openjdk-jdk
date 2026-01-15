@@ -1159,4 +1159,8 @@ public final class Security {
     private static URL newURL(String spec) throws MalformedURLException {
         return new URL(spec);
     }
+
+    public static String getFIPSmode() {
+        return RestrictedSecurity.getFIPSmode();
+    }
 }

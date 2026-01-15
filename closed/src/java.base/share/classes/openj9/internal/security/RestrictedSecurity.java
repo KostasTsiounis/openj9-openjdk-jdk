@@ -250,6 +250,14 @@ public final class RestrictedSecurity {
         return false;
     }
 
+    public static String getFIPSmode() {
+        if (isFIPSEnabled()) {
+            return restricts.jdkFipsMode;
+        }
+
+        return null;
+    }
+
     /**
      * Check if the service is allowed to be used in restricted security mode.
      *
