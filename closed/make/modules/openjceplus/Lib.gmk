@@ -30,27 +30,33 @@ OPENJCEPLUS_HEADER_FILES := $(SUPPORT_OUTPUTDIR)/headers/openjceplus
 OPENJCEPLUS_JCE_CLASSPATH := $(JDK_OUTPUTDIR)/modules/openjceplus:$(JDK_OUTPUTDIR)/modules/java.base
 OPENJCEPLUS_JGSKIT_MAKE := jgskit.mak
 OPENJCEPLUS_JGSKIT_MAKE_PATH := $(OPENJCEPLUS_TOPDIR)/src/main/native/ock
-OPENJCEPLUS_JGSKIT_PLATFORM :=
+OPENJCEPLUS_NATIVE_PLATFORM :=
+OPENJCEPLUS_OPENSSL_LIB :=
+OPENJCEPLUS_OPENSSL_MAKE := openjceplus.mak
+OPENJCEPLUS_OPENSSL_MAKE_PATH := $(OPENJCEPLUS_TOPDIR)/src/main/native/openssl
 
 ifeq ($(call isTargetOs, aix), true)
-  OPENJCEPLUS_JGSKIT_PLATFORM := ppc-aix64
+  OPENJCEPLUS_NATIVE_PLATFORM := ppc-aix64
 else ifeq ($(call isTargetOs, linux), true)
+  # The JDK OpenSSL build uses shlib_variant=-semeru on Linux, producing libcrypto-semeru.so
+  OPENJCEPLUS_OPENSSL_LIB := crypto-semeru
   ifeq ($(call isTargetCpu, aarch64), true)
-    OPENJCEPLUS_JGSKIT_PLATFORM := arm-linux64
+    OPENJCEPLUS_NATIVE_PLATFORM := arm-linux64
   else ifeq ($(call isTargetCpu, ppc64le), true)
-    OPENJCEPLUS_JGSKIT_PLATFORM := ppcle-linux64
+    OPENJCEPLUS_NATIVE_PLATFORM := ppcle-linux64
   else ifeq ($(call isTargetCpu, s390x), true)
-    OPENJCEPLUS_JGSKIT_PLATFORM := s390-linux64
+    OPENJCEPLUS_NATIVE_PLATFORM := s390-linux64
   else ifeq ($(call isTargetCpu, x86_64), true)
-    OPENJCEPLUS_JGSKIT_PLATFORM := x86-linux64
+    OPENJCEPLUS_NATIVE_PLATFORM := x86-linux64
   endif
 else ifeq ($(call isTargetOs, macosx), true)
   ifeq ($(call isTargetCpu, aarch64), true)
-    OPENJCEPLUS_JGSKIT_PLATFORM := aarch64-mac
+    OPENJCEPLUS_NATIVE_PLATFORM := aarch64-mac
   else ifeq ($(call isTargetCpu, x86_64), true)
-    OPENJCEPLUS_JGSKIT_PLATFORM := x86_64-mac
+    OPENJCEPLUS_NATIVE_PLATFORM := x86_64-mac
   endif
   OPENJCEPLUS_JGSKIT_MAKE := jgskit.mac.mak
+  OPENJCEPLUS_OPENSSL_MAKE := openjceplus.mac.mak
 else ifeq ($(call isTargetOs, windows), true)
   EXPORT_COMPILER_ENV_VARS := INCLUDE='$(OPENJ9_VS_INCLUDE)' LIB='$(OPENJ9_VS_LIB)'
   ifeq ($(call isTargetCpu, x86_64), true)
@@ -59,18 +65,19 @@ else ifeq ($(call isTargetOs, windows), true)
     OPENJCEPLUS_HEADER_FILES := $(call MixedPath,$(OPENJCEPLUS_HEADER_FILES))
     OPENJCEPLUS_JCE_CLASSPATH := "$(call MixedPath,$(JDK_OUTPUTDIR)/modules/openjceplus);$(call MixedPath,$(JDK_OUTPUTDIR)/modules/java.base)"
     OPENJCEPLUS_JGSKIT_MAKE := jgskit.win64.mak
-    OPENJCEPLUS_JGSKIT_PLATFORM := win64
+    OPENJCEPLUS_NATIVE_PLATFORM := win64
+    OPENJCEPLUS_OPENSSL_MAKE := openjceplus.win64.mak
   endif
 endif
 
-ifeq (,$(OPENJCEPLUS_JGSKIT_PLATFORM))
+ifeq (,$(OPENJCEPLUS_NATIVE_PLATFORM))
   $(error Unsupported platform $(OPENJDK_TARGET_OS)-$(OPENJDK_TARGET_CPU))
-endif # OPENJCEPLUS_JGSKIT_PLATFORM
+endif # OPENJCEPLUS_NATIVE_PLATFORM
 
-.PHONY : compile-libs
+.PHONY : compile-gskit-libs compile-openssl-libs
 
-compile-libs :
-	@$(ECHO) Compiling OpenJCEPlus native code
+compile-gskit-libs :
+	@$(ECHO) Compiling OpenJCEPlus GSKit native code
 	$(EXPORT_COMPILER_ENV_VARS) \
 		$(MAKE) \
 			-C $(OPENJCEPLUS_JGSKIT_MAKE_PATH) \
@@ -80,10 +87,25 @@ compile-libs :
 			JAVA_HOME=$(OPENJCEPLUS_JDK) \
 			JCE_CLASSPATH=$(OPENJCEPLUS_JCE_CLASSPATH) \
 			OPENJCEPLUS_HEADER_FILES=$(OPENJCEPLUS_HEADER_FILES) \
-			PLATFORM=$(OPENJCEPLUS_JGSKIT_PLATFORM) \
+			PLATFORM=$(OPENJCEPLUS_NATIVE_PLATFORM) \
 			all
-	@$(ECHO) OpenJCEplus compile complete
+	@$(ECHO) OpenJCEplus GSKit compile complete
 
-TARGETS += compile-libs
+compile-openssl-libs :
+	@$(ECHO) Compiling OpenJCEPlus OpenSSL native code
+	$(EXPORT_COMPILER_ENV_VARS) \
+		$(MAKE) \
+			-C $(OPENJCEPLUS_OPENSSL_MAKE_PATH) \
+			-f $(OPENJCEPLUS_OPENSSL_MAKE) \
+			EXTERNAL_HEADERS=true \
+			JAVA_HOME=$(OPENJCEPLUS_JDK) \
+			OPENJCEPLUS_HEADER_FILES=$(OPENJCEPLUS_HEADER_FILES) \
+			OPENSSL_HOME=$(OPENSSL_DIR) \
+			$(if $(OPENJCEPLUS_OPENSSL_LIB),OPENSSL_LIB=$(OPENJCEPLUS_OPENSSL_LIB)) \
+			PLATFORM=$(OPENJCEPLUS_NATIVE_PLATFORM) \
+			all
+	@$(ECHO) OpenJCEplus OpenSSL compile complete
+
+TARGETS += compile-gskit-libs compile-openssl-libs
 
 endif # BUILD_OPENJCEPLUS
