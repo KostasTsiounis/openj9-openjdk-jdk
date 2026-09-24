@@ -31,15 +31,13 @@ OPENJCEPLUS_JCE_CLASSPATH := $(JDK_OUTPUTDIR)/modules/openjceplus:$(JDK_OUTPUTDI
 OPENJCEPLUS_JGSKIT_MAKE := jgskit.mak
 OPENJCEPLUS_JGSKIT_MAKE_PATH := $(OPENJCEPLUS_TOPDIR)/src/main/native/ock
 OPENJCEPLUS_NATIVE_PLATFORM :=
-OPENJCEPLUS_OPENSSL_LIB :=
+OPENJCEPLUS_OPENSSL_LIB := crypto-semeru
 OPENJCEPLUS_OPENSSL_MAKE := openjceplus.mak
 OPENJCEPLUS_OPENSSL_MAKE_PATH := $(OPENJCEPLUS_TOPDIR)/src/main/native/openssl
 
 ifeq ($(call isTargetOs, aix), true)
   OPENJCEPLUS_NATIVE_PLATFORM := ppc-aix64
 else ifeq ($(call isTargetOs, linux), true)
-  # The JDK OpenSSL build uses shlib_variant=-semeru on Linux, producing libcrypto-semeru.so
-  OPENJCEPLUS_OPENSSL_LIB := crypto-semeru
   ifeq ($(call isTargetCpu, aarch64), true)
     OPENJCEPLUS_NATIVE_PLATFORM := arm-linux64
   else ifeq ($(call isTargetCpu, ppc64le), true)
