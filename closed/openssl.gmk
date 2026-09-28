@@ -90,5 +90,7 @@ build_openssl :
 	( $(OPENSSL_CONFIG_SETUP) $(CD) $(OPENSSL_DIR) && $(PERL) Configure $(OPENSSL_CONFIG_CFLAGS) $(OPENSSL_TARGET) no-makedepend no-tests no-winstore shared )
 	$(OPENSSL_PATCH)
 	+ ( $(OPENSSL_MAKE_SETUP) $(CD) $(OPENSSL_DIR) && $(OPENSSL_MAKE) )
+	@$(ECHO) OpenSSL build complete. Library files in $(OPENSSL_DIR):
+	@ls -la $(OPENSSL_DIR)
 
 .PHONY : build_openssl
