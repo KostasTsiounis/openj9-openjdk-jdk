@@ -210,7 +210,10 @@ ifneq ($(OPENSSL_BUNDLE_LIB_PATH), )
   ifeq (linux,$(OPENJDK_TARGET_OS))
     LIBCRYPTO_NAMES := libcrypto-semeru.so libcrypto.so.3 libcrypto.so.1.1 libcrypto.so.1.0.0
   else ifeq (macosx,$(OPENJDK_TARGET_OS))
-    LIBCRYPTO_NAMES := libcrypto.3.dylib libcrypto.1.1.dylib libcrypto.1.0.0.dylib
+    # semeru-darwin produces a single unversioned real file (no .N.dylib, no symlink).
+    # The install name is baked as @rpath/libcrypto-semeru.dylib at build time,
+    # which matches both the file name on disk and what NativeCrypto.c loads.
+    LIBCRYPTO_NAMES := libcrypto-semeru.dylib libcrypto.3.dylib libcrypto.1.1.dylib libcrypto.1.0.0.dylib
   else ifeq (windows,$(OPENJDK_TARGET_OS))
     ifeq ($(OPENJDK_TARGET_CPU_BITS), 64)
       LIBCRYPTO_NAMES := libcrypto-3-x64.dll libcrypto-1_1-x64.dll
@@ -219,10 +222,10 @@ ifneq ($(OPENSSL_BUNDLE_LIB_PATH), )
     endif
     LIBCRYPTO_NAMES += libeay32.dll
   else ifeq (aix,$(OPENJDK_TARGET_OS))
-    # OpenSSL 1.1.1 on AIX has switched to use archive library files (natural way)
-    # instead of 'libcrypto.so' files.
-    # See https://github.com/openssl/openssl/pull/6487.
-    LIBCRYPTO_NAMES := libcrypto64.so.3 libcrypto.so.3 libcrypto.so.1.1 libcrypto.so.1.0.0
+    # semeru-aix uses aix-solib packaging with shared_extension => ".so", producing
+    # a single unversioned real file libcrypto-semeru.so (no 64 infix, no symlink),
+    # matching what NativeCrypto.c loads.  Older names are kept as fallback.
+    LIBCRYPTO_NAMES := libcrypto-semeru.so libcrypto64.so.3 libcrypto.so.3 libcrypto.so.1.1 libcrypto.so.1.0.0
   else
     LIBCRYPTO_NAMES := libcrypto.so
   endif
@@ -235,10 +238,7 @@ ifneq ($(OPENSSL_BUNDLE_LIB_PATH), )
   TARGETS += $(LIBCRYPTO_TARGET_LIB)
   $(LIBCRYPTO_TARGET_LIB) : $(LIBCRYPTO_PATH)
 	$(call install-file)
-  ifeq (macosx,$(OPENJDK_TARGET_OS))
-    # update @rpath of the crypto library as the default is /usr/local/lib/
-	install_name_tool -id "@rpath/$(@F)" $@
-  else ifeq (windows,$(OPENJDK_TARGET_OS))
+  ifeq (windows,$(OPENJDK_TARGET_OS))
 	$(CHMOD) a+rx $@
   endif
 	$(call CodesignFile,"$@")
