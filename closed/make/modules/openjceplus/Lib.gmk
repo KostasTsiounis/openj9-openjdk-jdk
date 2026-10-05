@@ -57,6 +57,7 @@ else ifeq ($(call isTargetOs, macosx), true)
   OPENJCEPLUS_OPENSSL_MAKE := openjceplus.mac.mak
 else ifeq ($(call isTargetOs, windows), true)
   EXPORT_COMPILER_ENV_VARS := INCLUDE='$(OPENJ9_VS_INCLUDE)' LIB='$(OPENJ9_VS_LIB)'
+  OPENJCEPLUS_OPENSSL_LIB :=
   ifeq ($(call isTargetCpu, x86_64), true)
     OPENJCEPLUS_JDK := $(call MixedPath,$(OPENJCEPLUS_JDK))
     OPENJCEPLUS_GSKIT_HOME := $(call MixedPath,$(OPENJCEPLUS_GSKIT_HOME))
