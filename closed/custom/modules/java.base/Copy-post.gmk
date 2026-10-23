@@ -210,14 +210,10 @@ ifneq ($(OPENSSL_BUNDLE_LIB_PATH), )
   ifeq (linux,$(OPENJDK_TARGET_OS))
     LIBCRYPTO_NAMES := libcrypto-semeru.so libcrypto.so.3 libcrypto.so.1.1 libcrypto.so.1.0.0
   else ifeq (macosx,$(OPENJDK_TARGET_OS))
-    # semeru-darwin produces a single unversioned real file (no .N.dylib, no symlink).
-    # The install name is baked as @rpath/libcrypto-semeru.dylib at build time,
-    # which matches both the file name on disk and what NativeCrypto.c loads.
+    # semeru-darwin produces one unversioned libcrypto-semeru.dylib with an @rpath install name.
     LIBCRYPTO_NAMES := libcrypto-semeru.dylib libcrypto.3.dylib libcrypto.1.1.dylib libcrypto.1.0.0.dylib
   else ifeq (windows,$(OPENJDK_TARGET_OS))
-    # VC-wa64 (the only Windows target) uses shlib_variant => "-semeru" and
-    # multilib => "", producing libcrypto-3-semeru.dll.  Older names are kept
-    # as fallback in case a non-semeru build is bundled.
+    # VC-wa64 produces libcrypto-3-semeru.dll; older names are fallbacks.
     ifeq ($(OPENJDK_TARGET_CPU_BITS), 64)
       LIBCRYPTO_NAMES := libcrypto-3-semeru.dll libcrypto-3-x64.dll libcrypto-1_1-x64.dll
     else
@@ -225,9 +221,7 @@ ifneq ($(OPENSSL_BUNDLE_LIB_PATH), )
     endif
     LIBCRYPTO_NAMES += libeay32.dll
   else ifeq (aix,$(OPENJDK_TARGET_OS))
-    # semeru-aix uses aix-solib packaging with shared_extension => ".so", producing
-    # a single unversioned real file libcrypto-semeru.so (no 64 infix, no symlink),
-    # matching what NativeCrypto.c loads.  Older names are kept as fallback.
+    # semeru-aix produces one unversioned libcrypto-semeru.so; older names are fallbacks.
     LIBCRYPTO_NAMES := libcrypto-semeru.so libcrypto64.so.3 libcrypto.so.3 libcrypto.so.1.1 libcrypto.so.1.0.0
   else
     LIBCRYPTO_NAMES := libcrypto.so
@@ -237,10 +231,7 @@ ifneq ($(OPENSSL_BUNDLE_LIB_PATH), )
     $(error Cannot bundle OpenSSL - none of $(LIBCRYPTO_NAMES) are present in $(OPENSSL_BUNDLE_LIB_PATH))
   endif
 
-  # On Windows the copy destination must preserve the full OpenSSL-produced name
-  # (libcrypto-3-semeru.dll) so the before and after names match and NativeCrypto.c
-  # can load it without a rename.  On all other platforms the standard
-  # $(LIBRARY_PREFIX)crypto-semeru$(SHARED_LIBRARY_SUFFIX) expansion is correct.
+  # Windows keeps the OpenSSL-produced name (libcrypto-3-semeru.dll) with no rename.
   ifeq (windows,$(OPENJDK_TARGET_OS))
     LIBCRYPTO_TARGET_LIB := $(LIB_DST_DIR)/libcrypto-3-semeru.dll
   else

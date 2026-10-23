@@ -763,8 +763,6 @@ AC_DEFUN([CONFIGURE_OPENSSL],
           if test -s "$OPENSSL_DIR/lib/${LIBRARY_PREFIX}crypto${SHARED_LIBRARY_SUFFIX}" ; then
             OPENSSL_CFLAGS="-I${OPENSSL_DIR}/include"
             if test "x$enable_openssl_bundling" = xyes ; then
-              # semeru-darwin bakes @rpath into the dylib at build time, so no
-              # local copy or install_name_tool fixup is needed on macOS.
               OPENSSL_BUNDLE_LIB_PATH="${OPENSSL_DIR}/lib"
             fi
           elif test -s "$OPENSSL_DIR/${LIBRARY_PREFIX}crypto${SHARED_LIBRARY_SUFFIX}" ; then
